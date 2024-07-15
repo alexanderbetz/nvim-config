@@ -102,7 +102,7 @@ vim.g.have_nerd_font = false
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -568,6 +568,13 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
+        intelephense = {
+          filetypes = { 'php', 'blade' },
+        },
+        astro = {},
+        prettier = {},
+        tsserver = {},
+        svelte = {},
         -- clangd = {},
         -- gopls = {},
         -- pyright = {},
@@ -643,13 +650,14 @@ require('lazy').setup({
     },
     opts = {
       notify_on_error = false,
+      log_level = vim.log.levels.DEBUG,
       format_on_save = function(bufnr)
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
         local disable_filetypes = { c = true, cpp = true }
         return {
-          timeout_ms = 500,
+          timeout_ms = 1000,
           lsp_fallback = not disable_filetypes[vim.bo[bufnr].filetype],
         }
       end,
@@ -660,9 +668,15 @@ require('lazy').setup({
         --
         -- You can use a sub-list to tell conform to run *until* a formatter
         -- is found.
-        -- javascript = { { "prettierd", "prettier" } },
-        astro = { 'prettierd' },
-        php = { 'prettierd' },
+        javascript = { { 'prettier' } },
+        javascriptreact = { { 'prettier' } },
+        typescript = { { 'prettier' } },
+        typescriptreact = { { 'prettier' } },
+        astro = { { 'prettier' } },
+        json = { 'prettier' },
+        php = { 'prettier' },
+        blade = { 'prettier' },
+        svelte = { 'prettier' },
       },
     },
   },
@@ -734,7 +748,7 @@ require('lazy').setup({
           -- Accept ([y]es) the completion.
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
-          ['<C-y>'] = cmp.mapping.confirm { select = true },
+          ['<CR>'] = cmp.mapping.confirm { select = true },
 
           -- If you prefer more traditional completion keymaps,
           -- you can uncomment the following lines
@@ -785,11 +799,22 @@ require('lazy').setup({
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
     'folke/tokyonight.nvim',
     priority = 1000, -- Make sure to load this before all the other start plugins.
+    lazy = false,
+    config = function()
+      require('tokyonight').setup {
+        style = 'day',
+        light_style = 'day',
+        transparent = true,
+        on_colors = function(colors) end,
+      }
+
+      vim.cmd.colorscheme 'tokyonight-day'
+    end,
     init = function()
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-day'
+      -- vim.cmd.colorscheme 'tokyonight-day'
 
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
@@ -840,7 +865,7 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'php', 'vim', 'vimdoc' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -859,6 +884,8 @@ require('lazy').setup({
       require('nvim-treesitter.install').prefer_git = true
       ---@diagnostic disable-next-line: missing-fields
       require('nvim-treesitter.configs').setup(opts)
+
+      vim.treesitter.language.register('php', 'blade')
 
       -- There are additional nvim-treesitter modules that you can use to interact
       -- with nvim-treesitter. You should go explore a few and see what interests you:
@@ -912,6 +939,16 @@ require('lazy').setup({
     },
   },
 })
+
+vim.filetype.add {
+  extensions = {
+    ['blade.php'] = 'php',
+    blade = 'php',
+  },
+  filename = {
+    ['.prettierrc'] = 'json',
+  },
+}
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
