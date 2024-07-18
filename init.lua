@@ -282,19 +282,27 @@ require('lazy').setup({
     config = function() -- This is the function that runs, AFTER loading
       require('which-key').setup()
 
-      -- Document existing key chains
-      require('which-key').register {
-        ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
-        ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
-        ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-        ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-        ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
-        ['<leader>t'] = { name = '[T]oggle', _ = 'which_key_ignore' },
-        ['<leader>h'] = { name = 'Git [H]unk', _ = 'which_key_ignore' },
+      require('which-key').add {
+        { '<leader>c', group = '[C]ode' },
+        { '<leader>c_', hidden = true },
+        { '<leader>d', group = '[D]ocument' },
+        { '<leader>d_', hidden = true },
+        { '<leader>h', group = 'Git [H]unk' },
+        { '<leader>h_', hidden = true },
+        { '<leader>r', group = '[R]ename' },
+        { '<leader>r_', hidden = true },
+        { '<leader>s', group = '[S]earch' },
+        { '<leader>s_', hidden = true },
+        { '<leader>t', group = '[T]oggle' },
+        { '<leader>t_', hidden = true },
+        { '<leader>w', group = '[W]orkspace' },
+        { '<leader>w_', hidden = true },
       }
+
       -- visual mode
-      require('which-key').register({
-        ['<leader>h'] = { 'Git [H]unk' },
+      require('which-key').add({
+        { '<leader>h', group = 'Git [H]unk' },
+        { '<leader>h_', hidden = true },
       }, { mode = 'v' })
     end,
   },
@@ -575,6 +583,8 @@ require('lazy').setup({
         prettier = {},
         tsserver = {},
         svelte = {},
+        cssls = {},
+        html = {},
         -- clangd = {},
         -- gopls = {},
         -- pyright = {},
@@ -619,6 +629,25 @@ require('lazy').setup({
         'stylua', -- Used to format Lua code
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
+
+      require('lspconfig')['dartls'].setup {
+        cmd = { 'dart', 'language-server', '--protocol=lsp' },
+        filetypes = { 'dart' },
+        init_options = {
+          closingLabels = true,
+          flutterOutline = true,
+          onlyAnalyzeProjectsWithOpenFiles = true,
+          outline = true,
+          suggestFromUnimportedLibraries = true,
+        },
+        root_dir = require('lspconfig').util.root_pattern 'pubspec.yaml',
+        settings = {
+          dart = {
+            completeFunctionCalls = true,
+            showTodos = true,
+          },
+        },
+      }
 
       require('mason-lspconfig').setup {
         handlers = {
@@ -677,6 +706,21 @@ require('lazy').setup({
         php = { 'prettier' },
         blade = { 'prettier' },
         svelte = { 'prettier' },
+        html = { 'prettier' },
+        css = { 'prettier' },
+        dart = { 'dart_fmt' },
+      },
+      formatters = {
+        dart_fmt = {
+          -- This can be a string or a function that returns a string.
+          -- When defining a new formatter, this is the only field that is required
+          command = 'dart',
+          -- A list of strings, or a function that returns a list of strings
+          -- Return a single string instead of a list to run the command in a shell
+          args = { 'format', '--output', 'write', '$FILENAME' },
+          stdin = false,
+          tmpfile_format = '.conform.$RANDOM.$FILENAME',
+        },
       },
     },
   },
