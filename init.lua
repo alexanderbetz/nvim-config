@@ -844,16 +844,6 @@ require('lazy').setup({
     'folke/tokyonight.nvim',
     priority = 1000, -- Make sure to load this before all the other start plugins.
     lazy = false,
-    config = function()
-      require('tokyonight').setup {
-        style = 'day',
-        light_style = 'day',
-        transparent = true,
-        on_colors = function(colors) end,
-      }
-
-      vim.cmd.colorscheme 'tokyonight-day'
-    end,
     init = function()
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
@@ -865,6 +855,19 @@ require('lazy').setup({
     end,
   },
 
+  {
+    'f-person/auto-dark-mode.nvim',
+    opts = {
+      set_dark_mode = function()
+        vim.o.background = 'dark'
+        vim.cmd 'colorscheme tokyonight'
+      end,
+      set_light_mode = function()
+        vim.o.background = 'light'
+        vim.cmd 'colorscheme tokyonight-day'
+      end,
+    },
+  },
   -- Highlight todo, notes, etc in comments
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
