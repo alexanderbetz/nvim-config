@@ -84,6 +84,9 @@ I hope you enjoy your Neovim journey,
 P.S. You can delete this when you're done too. It's your config now! :)
 --]]
 
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -162,13 +165,14 @@ vim.opt.hlsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Project View
-vim.keymap.set('n', '<leader>pv', vim.cmd.Ex, { desc = '[P]roject [V]iew' })
+-- vim.keymap.set('n', '<leader>pv', vim.cmd.Ex, { desc = '[P]roject [V]iew' })
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+vim.keymap.set('n', '<leader>D', vim.diagnostic.reset, { desc = '[D]elete diagnostic logs' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -304,6 +308,20 @@ require('lazy').setup({
         { '<leader>h', group = 'Git [H]unk' },
         { '<leader>h_', hidden = true },
       }, { mode = 'v' })
+    end,
+  },
+
+  {
+    'nvim-tree/nvim-tree.lua',
+    version = '*',
+    lazy = false,
+    dependencies = {
+      'nvim-tree/nvim-web-devicons',
+    },
+    config = function()
+      require('nvim-tree').setup {}
+
+      vim.keymap.set('n', '<leader>pv', require('nvim-tree.api').tree.focus)
     end,
   },
 
@@ -575,16 +593,36 @@ require('lazy').setup({
       --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
+      local mason_registry = require 'mason-registry'
+      local vue_language_server_path = mason_registry.get_package('vue-language-server'):get_install_path() .. '/node_modules/@vue/language-server'
+
       local servers = {
         intelephense = {
           filetypes = { 'php', 'blade' },
         },
         astro = {},
         prettier = {},
-        tsserver = {},
+        tsserver = {
+          init_options = {
+            plugins = {
+              {
+                name = '@vue/typescript-plugin',
+                location = '/path/to/@vue/language-server',
+                languages = { 'vue' },
+              },
+            },
+          },
+        },
         svelte = {},
         cssls = {},
         html = {},
+        volar = {
+          init_options = {
+            vue = {
+              hybridMode = false,
+            },
+          },
+        },
         -- clangd = {},
         -- gopls = {},
         -- pyright = {},
@@ -687,7 +725,7 @@ require('lazy').setup({
         local disable_filetypes = { c = true, cpp = true }
         return {
           timeout_ms = 1000,
-          lsp_fallback = not disable_filetypes[vim.bo[bufnr].filetype],
+          lst_format = 'fallback',
         }
       end,
       formatters_by_ft = {
@@ -701,11 +739,12 @@ require('lazy').setup({
         javascriptreact = { { 'prettier' } },
         typescript = { { 'prettier' } },
         typescriptreact = { { 'prettier' } },
-        astro = { { 'prettier' } },
+        astro = { 'prettier' },
         json = { 'prettier' },
         php = { 'prettier' },
         blade = { 'prettier' },
         svelte = { 'prettier' },
+        vue = { 'prettier' },
         html = { 'prettier' },
         css = { 'prettier' },
         dart = { 'dart_fmt' },
@@ -723,6 +762,13 @@ require('lazy').setup({
         },
       },
     },
+  },
+
+  {
+    'm4xshen/autoclose.nvim',
+    init = function()
+      require('autoclose').setup()
+    end,
   },
 
   { -- Autocompletion
