@@ -319,7 +319,7 @@ require('lazy').setup({
       'nvim-tree/nvim-web-devicons',
     },
     config = function()
-      require('nvim-tree').setup {}
+      require('nvim-tree').setup { git = { enable = true, ignore = false } }
 
       vim.keymap.set('n', '<leader>pv', require('nvim-tree.api').tree.focus)
     end,
